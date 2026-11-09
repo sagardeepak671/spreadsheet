@@ -4,6 +4,10 @@
 
 This project is a Rust spreadsheet engine (`spreadsheet-core`) with three front-ends: a terminal CLI, an `eframe`/`egui` desktop GUI, and a browser front-end that runs the same Rust engine through WebAssembly. It provides a fully functional spreadsheet with features similar to modern spreadsheet software, including cell editing, formulas, undo/redo functionality, cut/copy/paste, find and replace, sorting, graphing, and theme customization. The application supports multiple sheets, CSV import/export, and a robust dependency tracking system for formula calculations.
 
+**Live Demo:** [https://sagardeepak671.github.io/spreadsheet/](https://sagardeepak671.github.io/spreadsheet/)
+
+The browser version can be tried directly without installing Rust or any other local dependencies.
+
 ## Features
 
 ### Core Spreadsheet Functionality
