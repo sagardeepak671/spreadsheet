@@ -1,0 +1,21 @@
+[package]
+name = "spreadsheet-wasm"
+version.workspace = true
+edition.workspace = true
+description = "wasm-bindgen bridge that exposes spreadsheet-core to JavaScript/TypeScript"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+spreadsheet-core = { path = "../core" }
+wasm-bindgen = "0.2.130"
+serde_json.workspace = true
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3.80"
+
+# wasm-opt needs a binaryen download from GitHub at build time; keep builds
+# deterministic/offline-friendly. Re-enable for smaller production bundles.
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = false

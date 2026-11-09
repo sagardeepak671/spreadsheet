@@ -1,0 +1,30 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/core",     # spreadsheet-core : pure Rust engine (no GUI, no filesystem, wasm-safe)
+    "crates/desktop",  # spreadsheet      : egui/eframe desktop app + terminal CLI
+    "crates/wasm",     # spreadsheet-wasm : wasm-bindgen bridge exposing the core to JS/TS
+]
+
+# `wasm-pack build` is run against crates/wasm only, so the desktop crate (and
+# its egui/eframe dependency tree) is never compiled for wasm32.
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+
+[workspace.dependencies]
+regex = "1.10.2"
+regex-lite = "0.1"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+[profile.release]
+opt-level = 3
+
+# Smaller / faster wasm output (only affects `--profile wasm-release`).
+[profile.wasm-release]
+inherits = "release"
+opt-level = "s"
+lto = true
+codegen-units = 1

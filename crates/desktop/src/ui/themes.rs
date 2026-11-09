@@ -1,0 +1,76 @@
+use eframe::epaint::Color32;
+
+#[derive(Clone)]
+pub struct Theme {
+    pub name: &'static str,
+    pub is_light_theme: bool,
+    pub cell_bg: Color32,
+    pub selected_cell_bg: Color32,
+    pub header_bg: Color32,
+    pub grid_line_color: Color32,
+    pub text_color: Color32,
+    pub header_text_color: Color32,
+}
+
+pub const THEMES: [Theme; 6] = [
+    Theme {
+        name: "Dark",
+        is_light_theme: false,
+        cell_bg: Color32::from_rgb(30, 34, 42),
+        selected_cell_bg: Color32::from_rgb(60, 70, 90),
+        header_bg: Color32::from_rgb(45, 49, 58),
+        grid_line_color: Color32::from_rgb(60, 64, 72),
+        text_color: Color32::from_rgb(220, 220, 220),
+        header_text_color: Color32::from_rgb(255, 255, 255),
+    },
+    Theme {
+        name: "Light",
+        is_light_theme: true,
+        cell_bg: Color32::from_rgb(240, 240, 240),
+        selected_cell_bg: Color32::from_rgb(200, 200, 200),
+        header_bg: Color32::from_rgb(220, 220, 220),
+        grid_line_color: Color32::from_rgb(200, 200, 200),
+        text_color: Color32::from_rgb(0, 0, 0),
+        header_text_color: Color32::from_rgb(0, 0, 0),
+    },
+    Theme {
+        name: "zindagi do pal ki",
+        is_light_theme: false,
+        cell_bg: Color32::from_rgb(0, 43, 54),
+        selected_cell_bg: Color32::from_rgb(7, 54, 66),
+        header_bg: Color32::from_rgb(88, 110, 117),
+        grid_line_color: Color32::from_rgb(101, 123, 131),
+        text_color: Color32::from_rgb(131, 148, 150),
+        header_text_color: Color32::from_rgb(253, 246, 227),
+    },
+    Theme {
+        name: "pal pal dil ke paas",
+        is_light_theme: false,
+        cell_bg: Color32::from_rgb(44, 36, 30),
+        selected_cell_bg: Color32::from_rgb(86, 66, 52),
+        header_bg: Color32::from_rgb(66, 45, 33),
+        grid_line_color: Color32::from_rgb(96, 75, 60),
+        text_color: Color32::from_rgb(240, 200, 140),
+        header_text_color: Color32::from_rgb(255, 230, 180),
+    },
+    Theme {
+        name: "kaho na pyar hai",
+        is_light_theme: true,
+        cell_bg: Color32::from_rgb(220, 240, 250),
+        selected_cell_bg: Color32::from_rgb(190, 225, 240),
+        header_bg: Color32::from_rgb(170, 210, 230),
+        grid_line_color: Color32::from_rgb(150, 190, 210),
+        text_color: Color32::from_rgb(30, 60, 80),
+        header_text_color: Color32::from_rgb(20, 40, 60),
+    },
+    Theme {
+        name: "Cyberpunk Noir",
+        is_light_theme: false,
+        cell_bg: Color32::from_rgb(15, 5, 25),
+        selected_cell_bg: Color32::from_rgb(55, 0, 70),
+        header_bg: Color32::from_rgb(90, 0, 120),
+        grid_line_color: Color32::from_rgb(255, 0, 128),
+        text_color: Color32::from_rgb(180, 130, 255),
+        header_text_color: Color32::from_rgb(255, 150, 200),
+    },
+];

@@ -1,0 +1,15 @@
+[package]
+name = "spreadsheet-core"
+version.workspace = true
+edition.workspace = true
+description = "Reusable spreadsheet engine: cells, formulas, dependency tracking, recalculation, workbook serialization. No GUI and no filesystem access, so it compiles unchanged for native and wasm32."
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+# regex-lite: same syntax for the ASCII patterns used here, ~1 MB smaller in wasm
+# than `regex` (no Unicode tables); `\d` is ASCII-only, which is what the parser needs.
+regex-lite.workspace = true
+serde.workspace = true
+serde_json.workspace = true

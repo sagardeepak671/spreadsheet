@@ -1,0 +1,24 @@
+[package]
+name = "spreadsheet"
+version.workspace = true
+edition.workspace = true
+description = "Desktop front-end (egui/eframe) and terminal CLI for spreadsheet-core"
+
+[[bin]]
+name = "spreadsheet"
+path = "src/main.rs"
+
+[dependencies]
+spreadsheet-core = { path = "../core" }
+regex.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+eframe = "0.26"
+egui = "0.26"
+egui_plot = "0.26"
+egui_extras = { version = "0.26", features = ["image"] }
+
+[features]
+default = ["no_gui"]
+gui = []
+no_gui = []

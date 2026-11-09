@@ -1,0 +1,40 @@
+Spreadsheet Application
+Project Overview
+
+This project aims to develop a Rust-based spreadsheet application with core spreadsheet functionalities, Vim-style navigation, and a user-friendly desktop GUI. Our goal is to create a lightweight and efficient alternative to traditional spreadsheet applications, focusing on keyboard-driven usability and performance.
+Features
+
+    Desktop Application: A native Rust GUI-based application  
+    User Interface (UI): Intuitive and keyboard-friendly UI using eframe/egui -> done
+    Navigation:
+        Cursor movement via arrow keys and Vim-style (h, j, k, l) -> done
+        Mouse support -> done
+    Modes:    
+        Insert mode for editing   -> done
+        Normal mode for navigation  -> done
+        Command mode for operations (VIM-style)
+    Data Editing:
+        Text support -> done
+        Floating-point numbers
+        Formulas -> done
+        Strings -> done
+    Operations:
+        Cut, copy, paste 
+        Undo, redo -> done
+        Find and Replace
+        Row and column management
+        Sorting capabilities
+    Multi-Sheet Support: Work with multiple sheets -> done
+    File Operations: Load and save files in CSV format -> done
+
+Technical Stack & Implementation Details
+Frontend & Framework
+
+    Using eframe framework for desktop application
+    egui for user interface components -> done
+
+Database
+
+    SQLite for efficient handling of:   |
+        Undo/redo operations            | -> done without SQLite
+        Multiple sheets management      |    

@@ -1,0 +1,25 @@
+{
+  "name": "spreadsheet-web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Minimal browser front-end proving the Rust spreadsheet core runs via WebAssembly",
+  "scripts": {
+    "build:wasm": "wasm-pack build ../crates/wasm --target web --out-dir ../../web/src/wasm-pkg",
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "test:e2e": "playwright test",
+    "test:all": "npm run typecheck && npm test && npm run test:e2e && npm run test:perf",
+    "test:perf": "PERF=1 playwright test e2e/perf.spec.ts --workers 1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "@types/node": "^26.6.5",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.7",
+    "vitest": "^3.2.7"
+  }
+}

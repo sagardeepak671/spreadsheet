@@ -1,0 +1,251 @@
+\documentclass{article}
+
+% Language setting
+\usepackage[english]{babel}
+
+% Set page size and margins
+\usepackage[letterpaper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+
+% Useful packages
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+
+% Code listing style
+\lstset{
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue}\bfseries,
+    stringstyle=\color{red},
+    commentstyle=\color{green!50!black},
+    numbers=left,
+    numberstyle=\tiny,
+    stepnumber=1,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    frame=single,
+    breaklines=true,
+    breakatwhitespace=true,
+    tabsize=4,
+    captionpos=b
+}
+
+\title{Spreadsheet Application}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This report details the development of a Rust-based spreadsheet application built using the \texttt{eframe} framework with \texttt{egui} for the graphical user interface. Extending our previous C-based spreadsheet, this project introduces significant enhancements, including memory-efficient cell storage, advanced features like find and replace, undo/redo, cut/copy/paste, sorting, graphing, and theme customization, and a robust dependency tracking system for formula calculations. The application supports multiple sheets, CSV import/export, and a variety of formula operations, making it comparable to modern spreadsheet software like Microsoft Excel. We discuss the design decisions, Rust crates utilized, implementation details, challenges encountered, and reasons why some proposed extensions could not be implemented, along with potential additional extensions and design justifications. 
+\end{abstract}
+
+\section{Introduction}
+In this project, we extended our previous C-based spreadsheet application. The new spreadsheet is implemented entirely in Rust, leveraging its safety, performance, and modern ecosystem to create a feature-rich, memory-efficient, and user-friendly application. The project uses the \texttt{eframe} framework with \texttt{egui} for a cross-platform graphical user interface (GUI), offering features akin to modern spreadsheet software, such as Microsoft Excel and Google Sheets. Key enhancements include:
+
+\begin{itemize}
+    \item Memory-efficient cell storage using a \texttt{HashMap}.
+    \item Support for strings, formulas, and arithmetic operations.
+    \item Advanced features like undo/redo, cut/copy/paste, find and replace, sorting, and graphing.
+    \item Customizable themes, fonts, and multiple sheet support.
+    \item CSV import/export and serialization.
+\end{itemize}
+
+This report outlines the implementation details, design decisions, Rust crates used, challenges faced, and additional considerations such as unimplemented extensions, extra features, and design justifications.
+
+\section{Main Spreadsheet Program}
+The core spreadsheet program replicates and enhances the functionality of our C project. Unlike the previous version, which initialized the entire spreadsheet grid in memory, this implementation stores only active cells (those referenced in commands) in a \texttt{HashMap<(i16, i16), Cell>}. This approach significantly reduces memory usage, as only populated cells consume resources.
+
+\subsection{Key Improvements}
+\begin{itemize}
+    \item \textbf{Memory Efficiency}: The \texttt{HashMap}-based storage ensures that only cells with data or formulas are allocated, unlike the fixed-size array in C.
+    \item \textbf{Dependency Tracking}: A robust system tracks cell dependencies and recalculates dependent cells efficiently, with cycle detection to prevent infinite loops.
+    \item \textbf{Formula Parsing}: Commands are parsed using regular expressions in the \texttt{parser.rs} module, supporting a wide range of operations (e.g., arithmetic, range functions like \texttt{SUM}, \texttt{MIN}, \texttt{MAX}).
+\end{itemize}
+
+The spreadsheet supports commands similar to the C version, such as setting cell values (\texttt{A1=42}), formulas (\texttt{C3=A1+B2}), and range functions (\texttt{D4=SUM(A1:A5)}). Additional commands include sorting (\texttt{SORT(A1:C5;B;asc)}) and navigation (\texttt{Scroll to A1}).
+
+\section{Additional Features}
+The application introduces several advanced features to enhance usability and functionality, detailed below.
+
+\subsection{Supporting Strings}
+Cells can store strings in addition to numeric values and formulas. The \texttt{Cell} struct includes an optional \texttt{string} field, allowing cells to hold text data (e.g., \texttt{B2="Hello"}). Calculations and error handling are adapted to handle strings, ensuring compatibility with operations like find and replace and dependency updates.
+
+\subsection{Sorting}
+The sorting feature allows users to sort a range of cells by a specified column or row in ascending or descending order. For example, given two columns \texttt{A} (student names) and \texttt{B} (marks), users can sort both columns based on marks. The implementation in \texttt{ui\_sheet\_functions.rs} ensures that dependent cells are updated post-sorting, and the operation is undoable.
+
+\subsection{Find and Replace}
+The find and replace functionality enables users to search for a specific text or number across the sheet and replace it with a new value. Implemented in \texttt{app\_impl.rs}, this feature updates all dependent cells and supports undo/redo. For instance, replacing \texttt{10} with \texttt{20} in a cell updates any formulas referencing that cell.
+
+\subsection{Undo and Redo}
+The application supports undoing and redoing actions, including cell edits, cut/paste, find and replace, and sorting. Actions are stored in \texttt{undo\_stack} and \texttt{redo\_stack} as \texttt{Action} enums (\texttt{Inserted}, \texttt{CutAction}, \texttt{FindAndReplace}, \texttt{Sort}). Each action captures the necessary state to reverse or reapply it, ensuring robust state management.
+
+\subsection{Cut, Copy, and Paste}
+Users can cut, copy, and paste cell contents, with dependency updates for cut operations. Implemented in \texttt{menu.rs}, this feature supports clipboard operations across sheets and ensures that pasted formulas reference the correct cells.
+
+\subsection{Graphing}
+The graphing feature allows users to plot data from two columns as a line graph, with customizable row ranges. Implemented in \texttt{menu.rs}, this feature leverages \texttt{egui}'s plotting capabilities to visualize data, such as student marks or numerical trends.
+
+\subsection{Multiple Sheets}
+The application supports multiple sheets, each with configurable rows and columns. Users can create, switch, and delete sheets via the menu system. Sheet data is stored in a \texttt{Vec<Sheet>}, and the current sheet index is tracked in \texttt{SpreadsheetApp}.
+
+\subsection{CSV Import/Export}
+Users can import data from CSV files and export sheets to CSV format, implemented in \texttt{utils.rs}. This feature ensures compatibility with external tools and supports data exchange.
+
+\subsection{Theme and Font Customization}
+The application supports light and dark themes, with customizable colors for cells, headers, and text, defined in \texttt{themes.rs}. Users can also select fonts from a predefined list in \texttt{fonts.rs}, enhancing the UI's accessibility and aesthetics.
+
+\subsection{Save and delete sheets} 
+we can save and delete any sheet we made.
+
+\section{Design Decisions}
+Several key design decisions shaped the development of the spreadsheet application:
+
+\begin{itemize}
+    \item \textbf{Rust for Safety and Performance}: Rust was chosen for its memory safety guarantees, performance, and modern ecosystem. The \texttt{eframe} and \texttt{egui} crates provided a lightweight, cross-platform GUI framework.
+    \item \textbf{Modular Architecture}: The codebase is organized into modules (\texttt{app.rs}, \texttt{sheet\_functions.rs}, etc.) to separate concerns, improve maintainability, and facilitate testing.
+    \item \textbf{HashMap-Based Storage}: Using a \texttt{HashMap} for cells reduced memory usage compared to a fixed grid, making the application scalable for large datasets.
+    \item \textbf{Dependency Tracking}: A \texttt{HashSet} for cell dependencies and a \texttt{HashMap} for range dependencies, combined with topological sorting, ensured efficient and correct recalculation.
+    \item \textbf{Undo/Redo System}: Storing actions as enums with sufficient state information allowed robust undo/redo functionality without excessive memory overhead.
+    \item \textbf{Regular Expression Parsing}: The \texttt{regex} crate was used for command parsing due to its flexibility and performance, supporting complex formula syntax.
+\end{itemize}
+
+\section{Rust Crates Used}
+The project leverages several Rust crates to implement its functionality:
+
+\begin{itemize}
+    \item \textbf{\texttt{eframe} and \texttt{egui}}: Provide the GUI framework for rendering the grid, menus, and other UI components. \texttt{eframe} ensures cross-platform compatibility.
+    \item \textbf{\texttt{serde} and \texttt{serde\_json}}: Enable serialization and deserialization of the spreadsheet state in the \texttt{.290} format.
+    \item \textbf{\texttt{regex}}: Used in \texttt{parser.rs} for parsing user commands and formulas.
+    \item \textbf{\texttt{std::collections}}: Provides \texttt{HashMap} and \texttt{HashSet} for efficient cell storage and dependency tracking.
+\end{itemize}
+
+These crates were selected for their reliability, performance, and alignment with Rust's ecosystem.
+
+\section{Implementation Details}
+The project is structured into several key modules, each responsible for specific functionality:
+
+\begin{itemize}
+    \item \textbf{\texttt{app.rs}}: Implements the \texttt{eframe::App} trait, handling the UI layout (formula bar, status bar, sheet tabs) and user input (keyboard shortcuts).
+    \item \textbf{\texttt{app\_impl.rs}}: Defines the \texttt{SpreadsheetApp} struct, managing sheets, clipboard, undo/redo stacks, and core operations like find and replace.
+    \item \textbf{\texttt{sheet\_display.rs}}: Renders the spreadsheet grid using \texttt{egui}, handling cell selection, editing, and scrolling.
+    \item \textbf{\texttt{menu.rs}}: Implements the menu system for file operations, editing, graphing, sorting, and customization.
+    \item \textbf{\texttt{utils.rs}}: Provides utility functions for CSV import/export, serialization, and undo/redo support.
+    \item \textbf{\texttt{sheet\_functions.rs}}: Manages spreadsheet data, including cell creation, dependency tracking, and recalculation.
+    \item \textbf{\texttt{parser.rs}}: Parses user commands using regular expressions, supporting formulas and navigation.
+    \item \textbf{\texttt{calculate\_functions.rs} (assumed)}: Handles formula calculations (e.g., arithmetic, range functions).
+    \item \textbf{\texttt{ui\_sheet\_functions.rs} (assumed)}: Manages dependencies and sorting operations.
+    \item \textbf{\texttt{fonts.rs} and \texttt{themes.rs} (assumed)}: Define font and theme customization options.
+\end{itemize}
+
+\subsection{Example Code Snippet}
+Below is a simplified example of the cell parsing logic in \texttt{parser.rs}:
+
+\begin{lstlisting}[language=Rust, caption={Example of command parsing in \texttt{parser.rs}}]
+use regex::Regex;
+
+fn parse_command(command: &str) -> Option<Command> {
+    let re = Regex::new(r"^([A-Z]+)(\d+)=(.+)$").unwrap();
+    if let Some(captures) = re.captures(command) {
+        let col = captures[1].to_string();
+        let row: i16 = captures[2].parse().ok()?;
+        let value = captures[3].to_string();
+        return Some(Command::SetCell(col, row, value));
+    }
+    None
+}
+\end{lstlisting}
+
+This code parses commands like \texttt{A1=42} or \texttt{B2=SUM(A1:A5)}, validating syntax and extracting relevant components.
+
+\section{Challenges and Solutions}
+During development, we encountered several challenges:
+
+\begin{itemize}
+    \item \textbf{Circular Dependencies}: Formulas referencing each other could cause infinite loops. We implemented cycle detection using \texttt{check\_cycle} and \texttt{check\_cycle\_range\_funcs} to halt recalculation and display errors.
+    \item \textbf{Undo/Redo Complexity}: Ensuring all actions were reversible required careful state management. We designed the \texttt{Action} enum to capture complete state changes, enabling robust undo/redo. Proper recalculation was the main issue we faced while handling undo and redo, and we had to spend a great deal of time to get it correct.
+    \item \textbf{UI Responsiveness}: Rendering large grids was initially slow. We optimized \texttt{sheet\_display.rs} to use \texttt{egui::ScrollArea} and lazy rendering, improving performance.
+    \item \textbf{Parsing Complex Formulas}: Supporting diverse formula syntax was challenging. The \texttt{regex} crate and modular parsing logic in \texttt{parser.rs} addressed this issue.
+\end{itemize}
+
+\section{Why Proposed Extensions Could Not Be Implemented}
+One thing that we proposed and we could not implement was , using SQLite, for database management. We thought we would need it in undo and redo, but over the course of  making the project, we realized, we can do thing without this also. Time was also a major constraint,  hence we decided not to use SQLite.
+
+\section{Could We Implement Extra Extensions?}
+Beyond the proposed extensions, we could have implemented additional features to enhance the application’s functionality:
+
+\begin{itemize}
+    \item \textbf{Floating-Point Numbers}: Supporting floating-point numbers would allow more precise calculations, such as \texttt{A1=3.14*B2}, enhancing compatibility with scientific and financial use cases. This would require modifying the \texttt{Cell} struct to include a \texttt{f64} field and updating the parser and calculation logic to handle decimal points.
+    \item \textbf{Conditional Formatting}: Users could apply formatting rules (e.g., color cells based on values) to improve data visualization. This would involve extending \texttt{themes.rs} to support rule-based styling and updating \texttt{sheet\_display.rs} to render conditional formats.
+    \item \textbf{Macros}: Adding a macro system would allow users to automate repetitive tasks, such as formatting or calculations. This could be implemented by introducing a scripting layer in \texttt{parser.rs} to interpret macro commands.
+\end{itemize}
+
+These extensions were not implemented due to time constraints but are feasible with additional development effort, as they align with the modular architecture and existing infrastructure.
+
+\section{Primary Data Structures}
+The application relies on several key data structures to manage spreadsheet state and operations:
+
+\begin{itemize}
+    \item \textbf{\texttt{HashMap}}: Hashmaps are used for storing cells in the sheet, for range functions.
+    \item \textbf{\texttt{Hashset}}: Hashsets are used for storing dependencies of a cell.
+\end{itemize}
+
+These structures were chosen for their performance characteristics (e.g., O(1) lookups in \texttt{HashMap}) and alignment with Rust’s ownership model. Other than these, vectors, were also used in various functions.
+
+\section{Interfaces Between Software Modules}
+The application’s modules interact through well-defined interfaces to ensure modularity and maintainability:
+
+\begin{itemize}
+    \item \textbf{\texttt{app.rs} and \texttt{app\_impl.rs}}: \texttt{app.rs} defines the \texttt{eframe::App} trait, calling methods in \texttt{app\_impl.rs} (e.g., \texttt{update\_ui}, \texttt{handle\_input}) to manage the application state.
+    \item \textbf{\texttt{sheet\_functions.rs} and \texttt{ui\_sheet\_functions.rs}}: \texttt{sheet\_functions.rs} provides core operations (e.g., \texttt{set\_cell}, \texttt{recalculate}), while \texttt{ui\_sheet\_functions.rs} handles UI-specific tasks like sorting and dependency updates, interfacing through function calls.
+    \item \textbf{\texttt{parser.rs} and \texttt{calculate\_functions.rs}}: \texttt{parser.rs} parses commands into \texttt{Command} enums, which \texttt{calculate\_functions.rs} processes to perform calculations, returning results or errors.
+    \item \textbf{\texttt{menu.rs} and \texttt{utils.rs}}: \texttt{menu.rs} triggers operations like CSV import/export, calling utility functions in \texttt{utils.rs} to handle file operations.
+    \item \textbf{\texttt{sheet\_display.rs} and \texttt{themes.rs}/\texttt{fonts.rs}}: \texttt{sheet\_display.rs} queries \texttt{themes.rs} and \texttt{fonts.rs} for styling information to render the grid.
+\end{itemize}
+
+These interfaces use Rust’s type system (e.g., structs, enums, traits) to enforce clear boundaries and prevent invalid interactions.
+
+\section{Approaches for Encapsulation}
+Encapsulation was achieved through Rust’s module system and access control:
+
+\begin{itemize}
+    \item \textbf{Module-Level Encapsulation}: Each module (\texttt{app.rs}, \texttt{sheet\_functions.rs}, etc.) exposes only necessary functions and types via \texttt{pub}, keeping internal implementations private. For example, \texttt{sheet\_functions.rs} exposes \texttt{set\_cell} but hides dependency tracking logic.
+    \item \textbf{Struct Encapsulation}: Structs like \texttt{SpreadsheetApp} and \texttt{Sheet} use private fields, with public methods (e.g., \texttt{add\_sheet}, \texttt{recalculate}) providing controlled access.
+    \item \textbf{Enum-Based State Management}: The \texttt{Action} enum encapsulates state changes for undo/redo, ensuring that only valid operations are applied.
+    \item \textbf{Trait-Based Abstraction}: The \texttt{eframe::App} trait abstracts the UI logic, allowing \texttt{app.rs} to interact with \texttt{egui} without exposing implementation details.
+\end{itemize}
+
+This approach minimized coupling, improved testability, and ensured that modules could be modified independently.
+
+\section{Justification of Design}
+The design is robust and effective for several reasons:
+
+\begin{itemize}
+    \item \textbf{Scalability}: The \texttt{HashMap}-based storage and dependency tracking system scale well for large spreadsheets, as only active cells and dependencies are processed.
+    \item \textbf{Maintainability}: The modular architecture and clear interfaces allow developers to extend or modify features (e.g., adding new formula types) without affecting other modules.
+    \item \textbf{Performance}: Rust’s zero-cost abstractions and efficient data structures (e.g., \texttt{HashMap}, \texttt{HashSet}) ensure fast operations, while \texttt{egui}’s lazy rendering optimizes UI performance.
+    \item \textbf{Reliability}: Rust’s memory safety guarantees and encapsulation prevent common errors (e.g., null pointer dereferences, data races), ensuring a stable application.
+    \item \textbf{User Experience}: Features like undo/redo, theme customization, and multiple sheets align with user expectations from modern spreadsheet software.
+\end{itemize}
+
+The design balances functionality, performance, and maintainability, making it suitable for both academic and practical use cases.
+
+\section{Whether We Had to Modify Design}
+Compared to the C project, we had to modify many designs especially in memory handling, and dependency handling. 
+
+\begin{itemize}
+    \item \textbf{Storage Model}: We switched from a fixed-size array to a \texttt{HashMap} to improve memory efficiency, necessitating changes in cell access and serialization logic.
+    \item \textbf{Undo/Redo}: The initial design did not include undo/redo. Adding this feature required a new \texttt{Action} enum and stack-based state management, impacting multiple modules.
+    \item \textbf{UI Framework}: Transitioning from C to \texttt{eframe}/\texttt{egui} required a complete overhaul of the UI layer, including new modules (\texttt{sheet\_display.rs}, \texttt{menu.rs}).
+\end{itemize}
+
+These modifications were necessary to meet the project’s goals of enhanced functionality and performance, and they resulted in a more robust and feature-rich application.
+
+\section{Conclusion}
+The Rust-based spreadsheet application successfully extends our C project, delivering a feature-rich, memory-efficient, and user-friendly tool. By leveraging Rust’s safety and performance, along with crates like \texttt{eframe}, \texttt{egui}, and \texttt{serde}, we implemented advanced features like undo/redo, sorting, graphing, and theme customization. The modular design, efficient data structures, and robust dependency tracking system ensure scalability and maintainability. While some proposed extensions (e.g., real-time collaboration) were not implemented due to time constraints, additional features like floating-point support and conditional formatting are feasible future enhancements. The design’s evolution from the C project demonstrates adaptability and alignment with modern spreadsheet requirements.
+
+
+\end{document}

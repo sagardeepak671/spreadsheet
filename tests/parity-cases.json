@@ -1,0 +1,75 @@
+{
+  "description": "Shared spreadsheet cases. Each step is either a command of the core command language with the expected engine status, or a set of expected display values. Executed by crates/core (native Rust), web/src/parity.test.ts (wasm in Node) and web/e2e/parity.spec.ts (browser UI).",
+  "rows": 10,
+  "cols": 10,
+  "steps": [
+    { "cmd": "A1=10", "status": "ok" },
+    { "cmd": "A2=-3", "status": "ok" },
+    { "cmd": "A3=5", "status": "ok" },
+    { "cmd": "A4=8", "status": "ok" },
+    { "cmd": "A5=2", "status": "ok" },
+
+    { "cmd": "B1=A1+A2", "status": "ok" },
+    { "cmd": "B2=A1*3", "status": "ok" },
+    { "cmd": "B3=100-A1", "status": "ok" },
+    { "cmd": "B4=7/2", "status": "ok" },
+    { "cmd": "B5=A1/4", "status": "ok" },
+    { "cmd": "B6=20/A1", "status": "ok" },
+    { "cmd": "B7=A3-A4", "status": "ok" },
+    { "cmd": "B8=A1*A2", "status": "ok" },
+    { "check": { "B1": "7", "B2": "30", "B3": "90", "B4": "3", "B5": "2", "B6": "2", "B7": "-3", "B8": "-30" } },
+
+    { "cmd": "C1=SUM(A1:A5)", "status": "ok" },
+    { "cmd": "C2=MIN(A1:A5)", "status": "ok" },
+    { "cmd": "C3=MAX(A1:A5)", "status": "ok" },
+    { "cmd": "C4=AVG(A1:A5)", "status": "ok" },
+    { "cmd": "C5=STDEV(A1:A5)", "status": "ok" },
+    { "cmd": "C6=SUM(A1:B2)", "status": "ok" },
+    { "cmd": "C7=MAX(J1:J3)", "status": "ok" },
+    { "cmd": "C8=MIN(J1:J3)", "status": "ok" },
+    { "cmd": "C9=AVG(J1:J3)", "status": "ok" },
+    { "check": { "C1": "22", "C2": "-3", "C3": "10", "C4": "4", "C5": "5", "C6": "44", "C7": "0", "C8": "0", "C9": "0" } },
+
+    { "cmd": "D1=\"hi there\"", "status": "ok" },
+    { "cmd": "D2=D1", "status": "ok" },
+    { "cmd": "D3=D1+A1", "status": "ok" },
+    { "check": { "D1": "hi there", "D2": "hi there", "D3": "Err" } },
+
+    { "cmd": "E1=A1/0", "status": "ok" },
+    { "cmd": "E2=E1+1", "status": "ok" },
+    { "cmd": "E3=1/0", "status": "ok" },
+    { "cmd": "E4=SUM(E1:E2)", "status": "ok" },
+    { "cmd": "E5=A5/A2", "status": "ok" },
+    { "check": { "E1": "Err", "E2": "Err", "E3": "Err", "E4": "Err", "E5": "0" } },
+
+    { "cmd": "F1=F2", "status": "ok" },
+    { "cmd": "F2=F1", "status": "circular error" },
+    { "cmd": "F3=SUM(F3:F4)", "status": "circular error" },
+    { "cmd": "F4=F5+1", "status": "ok" },
+    { "cmd": "F5=F4*2", "status": "circular error" },
+    { "cmd": "F6=F6", "status": "circular error" },
+    { "check": { "F1": "0", "F2": "0", "F3": "0", "F4": "1", "F5": "0", "F6": "0" } },
+
+    { "cmd": "G1=foo", "status": "Invalid cmd" },
+    { "cmd": "G2=SUM(A1:A5", "status": "Invalid cmd" },
+    { "cmd": "G3=Z99", "status": "Invalid cmd" },
+    { "cmd": "G4=SUM(A5:A1)", "status": "Invalid cmd" },
+    { "check": { "G1": "0", "G2": "0", "G3": "0", "G4": "0" } },
+
+    { "cmd": "H1=SLEEP(2)", "status": "ok", "sleepSeconds": 2 },
+    { "cmd": "H2=SLEEP(A3)", "status": "ok", "sleepSeconds": 5 },
+    { "check": { "H1": "2", "H2": "5" } },
+
+    { "cmd": "A1=20", "status": "ok" },
+    { "check": { "B1": "17", "B2": "60", "B3": "80", "B5": "5", "B6": "1", "B8": "-60", "C1": "32", "C3": "20", "C4": "6", "C5": "8", "C6": "94", "D3": "Err", "E1": "Err" } },
+
+    { "cmd": "A2=0", "status": "ok" },
+    { "check": { "B1": "20", "C1": "35", "C2": "0", "E5": "Err" } },
+
+    { "cmd": "A3=\"text\"", "status": "ok" },
+    { "check": { "C1": "Err", "C3": "Err", "B7": "Err", "H2": "Err" } },
+
+    { "cmd": "A3=5", "status": "ok" },
+    { "check": { "C1": "35", "C3": "20", "B7": "-3", "H2": "5" } }
+  ]
+}

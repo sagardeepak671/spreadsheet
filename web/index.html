@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light" />
+    <title>Spreadsheet</title>
+  </head>
+  <body>
+    <!-- ===================================================== home screen -->
+    <section id="home" class="home" hidden aria-label="home">
+      <div class="home-inner">
+        <header class="home-header">
+          <span class="home-logo" id="home-logo"></span>
+          <div>
+            <h1>Spreadsheet</h1>
+            <p class="muted">Rust spreadsheet engine running in your browser. Workbooks are kept on this device.</p>
+          </div>
+          <button id="home-theme" type="button" class="btn-icon" title="Theme"></button>
+        </header>
+        <div class="home-columns">
+          <div class="home-actions">
+            <h2>Start</h2>
+            <button id="home-new" type="button" class="home-action"><span class="icon-slot" data-icon="new"></span><span><strong>New spreadsheet</strong><small>blank workbook with one 1000 × 1000 sheet</small></span></button>
+            <button id="home-open" type="button" class="home-action"><span class="icon-slot" data-icon="open"></span><span><strong>Open workbook</strong><small>.290 file saved by this app or the desktop version</small></span></button>
+            <button id="home-import" type="button" class="home-action"><span class="icon-slot" data-icon="csv"></span><span><strong>Import CSV</strong><small>values become a sheet of a new workbook</small></span></button>
+            <p class="muted small">You can also drop a .290 or .csv file anywhere on this page.</p>
+          </div>
+          <div class="home-recent">
+            <h2>Recent on this device</h2>
+            <div id="home-recent-list" class="recent-list"></div>
+          </div>
+        </div>
+        <footer class="home-footer muted small"><span id="home-engine"></span></footer>
+      </div>
+    </section>
+
+    <!-- ===================================================== application -->
+    <div id="app" class="app" hidden>
+      <header class="menubar">
+        <button id="btn-home" type="button" class="brand" title="Home"><span id="brand-logo"></span></button>
+        <input id="wb-name" class="wb-name" aria-label="workbook name" spellcheck="false" autocomplete="off" />
+        <nav id="menubar" class="menus"></nav>
+        <div class="menubar-right">
+          <span id="autosave" class="autosave" data-state="idle"></span>
+          <button id="btn-theme" type="button" class="btn-icon" title="Theme" aria-label="theme"></button>
+        </div>
+      </header>
+
+      <div class="toolbar" role="toolbar" aria-label="tools">
+        <div class="tb-group">
+          <button id="btn-undo" type="button" class="btn-icon" title="Undo" data-icon="undo" aria-label="Undo"></button>
+          <button id="btn-redo" type="button" class="btn-icon" title="Redo" data-icon="redo" aria-label="Redo"></button>
+        </div>
+        <div class="tb-group">
+          <button id="btn-cut" type="button" class="btn-icon" title="Cut (references follow the moved cells)" data-icon="cut" aria-label="Cut"></button>
+          <button id="btn-copy" type="button" class="btn-icon" title="Copy values" data-icon="copy" aria-label="Copy"></button>
+          <button id="btn-paste" type="button" class="btn-icon" title="Paste" data-icon="paste" aria-label="Paste"></button>
+        </div>
+        <div class="tb-group" aria-label="formatting">
+          <select id="fmt-size" class="tb-select" aria-label="font size" title="Font size"></select>
+          <button id="fmt-bold" type="button" class="btn-icon" title="Bold (⌘/Ctrl+B)" data-icon="bold" aria-pressed="false" aria-label="Bold"></button>
+          <button id="fmt-italic" type="button" class="btn-icon" title="Italic (⌘/Ctrl+I)" data-icon="italic" aria-pressed="false" aria-label="Italic"></button>
+          <button id="fmt-underline" type="button" class="btn-icon" title="Underline (⌘/Ctrl+U)" data-icon="underline" aria-pressed="false" aria-label="Underline"></button>
+        </div>
+        <div class="tb-group">
+          <label class="tb-color" title="Text colour"><span class="icon-slot" data-icon="text-color"></span><input id="fmt-color" type="color" value="#000000" aria-label="text colour" /></label>
+          <button id="fmt-color-clear" type="button" class="btn-icon tb-mini" title="Default text colour" data-icon="close" aria-label="default text colour"></button>
+          <label class="tb-color" title="Fill colour"><span class="icon-slot" data-icon="fill"></span><input id="fmt-fill" type="color" value="#ffffff" aria-label="fill colour" /></label>
+          <button id="fmt-fill-clear" type="button" class="btn-icon tb-mini" title="No fill" data-icon="close" aria-label="no fill"></button>
+        </div>
+        <div class="tb-group">
+          <button id="fmt-left" type="button" class="btn-icon" title="Align left" data-icon="align-left" aria-pressed="false" aria-label="Align left"></button>
+          <button id="fmt-center" type="button" class="btn-icon" title="Align center" data-icon="align-center" aria-pressed="false" aria-label="Align center"></button>
+          <button id="fmt-right" type="button" class="btn-icon" title="Align right" data-icon="align-right" aria-pressed="false" aria-label="Align right"></button>
+          <button id="fmt-clear" type="button" class="btn-icon" title="Clear formatting" data-icon="clear-format" aria-label="Clear formatting"></button>
+        </div>
+        <div class="tb-group">
+          <button id="btn-find" type="button" class="btn-icon" title="Find and replace" data-icon="find" aria-label="Find and replace"></button>
+          <button id="btn-sort" type="button" class="btn-icon" title="Sort range" data-icon="sort" aria-label="Sort range"></button>
+          <button id="btn-chart" type="button" class="btn-icon" title="Insert chart from the selection" data-icon="chart" aria-label="Insert chart"></button>
+          <button id="btn-charts" type="button" class="btn-icon" title="Show / hide the chart panel" data-icon="panel-right" aria-pressed="false" aria-label="Chart panel"><span id="charts-count" class="badge" hidden></span></button>
+        </div>
+      </div>
+
+      <div class="formula-bar">
+        <input id="namebox" aria-label="cell reference" title="Go to cell (Enter)" spellcheck="false" autocomplete="off" />
+        <span class="fx" aria-hidden="true">fx</span>
+        <input id="formula" aria-label="formula" placeholder="value, formula (B1+5, SUM(A1:B2), =A1*2), text, or SORT(A1:B5;A;asc)" spellcheck="false" autocomplete="off" />
+        <output id="value" class="formula-value" aria-label="computed value"></output>
+      </div>
+
+      <div class="workspace">
+        <div id="grid"></div>
+        <aside id="chart-panel" class="chart-panel" hidden aria-label="charts">
+          <header>
+            <span>Charts</span>
+            <button id="chart-panel-close" type="button" class="btn-icon" title="Hide" aria-label="hide chart panel" data-icon="close"></button>
+          </header>
+          <div class="chart-panel-content"></div>
+        </aside>
+      </div>
+
+      <div class="sheetbar">
+        <div id="sheet-tabs" role="tablist" aria-label="sheets"></div>
+      </div>
+
+      <footer class="statusbar">
+        <span id="status" class="status-info"></span>
+        <span id="sel-info"></span>
+        <span id="render-info" class="statusbar-dim"></span>
+        <span id="boot" class="statusbar-dim"></span>
+      </footer>
+    </div>
+
+    <!-- ========================================================= dialogs -->
+    <dialog id="dlg-new-sheet">
+      <form id="new-sheet-form" method="dialog" novalidate>
+        <h2>New sheet</h2>
+        <label>Name <input id="new-name" autocomplete="off" /></label>
+        <label>Rows <input id="new-rows" type="number" min="1" max="1000" value="1000" required /></label>
+        <label>Columns <input id="new-cols" type="number" min="1" max="18278" value="1000" required /></label>
+        <p class="error" id="new-sheet-error"></p>
+        <menu>
+          <button type="button" class="btn" onclick="this.closest('dialog').close()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="new-sheet-create">Create</button>
+        </menu>
+      </form>
+    </dialog>
+
+    <dialog id="dlg-save">
+      <form id="save-form">
+        <h2>Save workbook</h2>
+        <label>File name <span class="suffix-field"><input id="save-name" autocomplete="off" spellcheck="false" /><span>.290</span></span></label>
+        <p class="muted">Downloads the whole workbook (all sheets, formulas, formatting and charts) in the desktop format.</p>
+        <menu>
+          <button type="button" class="btn" onclick="this.closest('dialog').close()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="save-confirm">Download</button>
+        </menu>
+      </form>
+    </dialog>
+
+    <dialog id="dlg-find">
+      <form id="find-form">
+        <h2>Find and replace</h2>
+        <label>Find <input id="find-text" autocomplete="off" /></label>
+        <label>Replace with <input id="replace-text" autocomplete="off" /></label>
+        <p class="muted">Find matches any cell text. Replace changes constant cells whose value equals the text exactly; formulas are never changed.</p>
+        <menu>
+          <button type="button" class="btn" onclick="this.closest('dialog').close()">Close</button>
+          <button type="button" class="btn" id="find-next">Find next</button>
+          <button type="submit" class="btn btn-primary" id="replace-all">Replace all</button>
+        </menu>
+      </form>
+    </dialog>
+
+    <dialog id="dlg-sort">
+      <form id="sort-form">
+        <h2>Sort range</h2>
+        <label>From <input id="sort-start" autocomplete="off" placeholder="A1" /></label>
+        <label>To <input id="sort-end" autocomplete="off" placeholder="C9" /></label>
+        <label>By column / row <input id="sort-key" autocomplete="off" placeholder="A or 1" /></label>
+        <p class="muted">A column letter sorts the rows of the range; a row number sorts its columns. The range must contain only values.</p>
+        <p class="error" id="sort-error"></p>
+        <menu>
+          <button type="button" class="btn" onclick="this.closest('dialog').close()">Cancel</button>
+          <button type="submit" class="btn" value="desc">Sort descending</button>
+          <button type="submit" class="btn btn-primary" value="asc" id="sort-asc">Sort ascending</button>
+        </menu>
+      </form>
+    </dialog>
+
+    <dialog id="dlg-chart" class="chart-dialog">
+      <form id="chart-form">
+        <h2 id="chart-heading">Insert chart</h2>
+        <div class="chart-dialog-grid">
+          <div class="chart-options">
+            <label>Title <input id="chart-title" autocomplete="off" placeholder="optional" /></label>
+            <label>Type
+              <select id="chart-kind">
+                <option value="line">Line</option>
+                <option value="bar">Bar</option>
+                <option value="scatter">Scatter</option>
+              </select>
+            </label>
+            <label>Range from <input id="chart-start" autocomplete="off" placeholder="A1" /></label>
+            <label>to <input id="chart-end" autocomplete="off" placeholder="C12" /></label>
+            <label>X axis label <input id="chart-xlabel" autocomplete="off" placeholder="optional" /></label>
+            <label>Y axis label <input id="chart-ylabel" autocomplete="off" placeholder="optional" /></label>
+            <label class="check"><input id="chart-rows" type="checkbox" /> Series are in rows (default: columns)</label>
+            <label class="check"><input id="chart-headers" type="checkbox" /> First cell of each series is its name</label>
+            <label class="check"><input id="chart-firstx" type="checkbox" /> First series is the X axis (values / categories)</label>
+            <p class="error" id="chart-error"></p>
+          </div>
+          <div class="chart-preview-box">
+            <div id="chart-preview" class="chart-preview"></div>
+            <p class="muted" id="chart-warnings"></p>
+          </div>
+        </div>
+        <menu>
+          <button type="button" class="btn" onclick="this.closest('dialog').close()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="chart-submit">Insert</button>
+        </menu>
+      </form>
+    </dialog>
+
+    <dialog id="dlg-shortcuts">
+      <form method="dialog">
+        <h2>Keyboard shortcuts</h2>
+        <ul id="shortcuts" class="shortcut-list"></ul>
+        <menu><button type="submit" class="btn btn-primary">Close</button></menu>
+      </form>
+    </dialog>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
